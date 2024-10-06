@@ -40,6 +40,16 @@ def labeling_logic(frame_text, frame, words, metaphors, df, csv_path):
 
     words_df['Futurism'] = False
     words_df['Futurism'] = words_df['Futurism'].astype(bool)
+
+    words_df['Pastism'] = False
+    words_df['Pastism'] = words_df['Pastism'].astype(bool)
+
+    words_df['Linear'] = False
+    words_df['Linear'] = words_df['Linear'].astype(bool)
+
+    words_df['Cyclic'] = False
+    words_df['Cyclic'] = words_df['Cyclic'].astype(bool)
+
     CURRENT_PHRASE = st.session_state.get('current_phrase')
 
     col_1, col_2, col_3 = frame.columns(3)
