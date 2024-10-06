@@ -2,7 +2,7 @@ import os
 import streamlit as st
 import pandas as pd
 import ast
-import uuid
+import uuid, base64
 
 UPLOADED_DATA_FOLDER = 'uploaded_data'
 LABELING_FOLDER = 'labeled_data'
@@ -52,7 +52,9 @@ def labeling_logic(frame_text, frame, words, metaphors, df, csv_path):
 
     CURRENT_PHRASE = st.session_state.get('current_phrase')
 
-    col_1, col_2, col_3 = frame.columns(3)
+    # set 3 columns, the col_2 is going to be larger than the other two
+
+    col_1, col_2, col_3 = frame.columns([1, 4, 1])
     # let the user select the correct or incorrect words
     new_df = col_2.data_editor(words_df, use_container_width=True, key=f'words_df_{CURRENT_PHRASE}')
 
@@ -97,6 +99,13 @@ def labeling_logic(frame_text, frame, words, metaphors, df, csv_path):
         words, metaphors = do_coloring(paragraph)
         labeling_logic(frame_text, frame, words, metaphors, df, csv_path)
 
+    # let the user download the progress, meaning the logging info
+    with open(path_to_save, 'rb') as file:
+        b64 = base64.b64encode(file.read()).decode()
+        href = f'<a href="data:file/csv;base64,{b64}" download="progress.csv">Download Progress</a>'
+        st.markdown(href, unsafe_allow_html=True)
+
+
 def do_coloring(paragraph):
     add_colour = lambda word, label: f'<span style="color: red">{word}</span>' if label == 'LABEL_1' else f'<span style="color: green">{word}</span>'
     add_grey = lambda word, label: f'<span style="color: grey">{word}</span>'
@@ -115,7 +124,14 @@ def do_coloring(paragraph):
 
 def main():
     st.title('Data Labelling')
-    # let the user select from a list of csv files from 'uploaded_data' folder
+    # having a markdown message to explain the colors: red for metaphor, green for non-metaphor and grey for words that do not have a high score
+    st.markdown('''
+    Legend: 
+    - <span style="color: red">Red</span> for metaphor
+    - <span style="color: green">Green</span> for non-metaphor
+    - <span style="color: grey">Grey</span> for words that do not have a high score
+    ''', unsafe_allow_html=True)
+
     if os.path.exists(UPLOADED_DATA_FOLDER):
         csv_files = os.listdir(UPLOADED_DATA_FOLDER)
         csv_path = st.selectbox('Select a csv file', csv_files)
@@ -142,3 +158,5 @@ def main():
     st.session_state.current_phrase = prev_index
 
     labeling_logic(frame_text, frame, words, metaphors, df, csv_path)
+
+
